@@ -30,7 +30,8 @@ with open('plik_do_zaladowania.sql', 'w', encoding="utf-8") as dest:
                     dest.write(f"INSERT INTO {table_name} VALUES ({', '.join(values)});\n")
             
     dest.write(
-'''SELECT DISTINCT A.Autor, B.Autor AS Wspólnik 
+'''
+SELECT DISTINCT A.Autor, B.Autor AS Wspólnik 
 FROM autorstwo A
 JOIN autorstwo B
 ON A.Praca = B.Praca

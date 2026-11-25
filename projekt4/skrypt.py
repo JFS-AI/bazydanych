@@ -31,10 +31,25 @@ with open('plik_do_zaladowania.sql', 'w', encoding="utf-8") as dest:
             
     dest.write(
 '''
-SELECT autor, praca, LEVEL AS poziom, SYS_CONNECT_BY_PATH(autor, '/') "Path"
-FROM autorstwo
-START WITH autor = 'Pilipczuk Mi'
-CONNECT BY NOCYCLE PRIOR praca = praca OR PRIOR autor = autor
+WITH edges AS (
+  SELECT DISTINCT a.autor, b.autor AS wspolnik
+  FROM autorstwo a
+  JOIN autorstwo b ON a.praca = b.praca
+  WHERE a.autor != b.autor
+),
+path (autor, poziom) AS (
+  SELECT DISTINCT autor, 0 FROM autorstwo WHERE autor = 'Pilipczuk Mi'
+  UNION ALL
+  SELECT e.wspolnik, p.poziom + 1
+  FROM path p
+  JOIN edges e ON p.autor = e.autor
+) CYCLE autor SET cycle_found TO 1 DEFAULT 0
+SELECT a.id, MIN(poziom) AS poziom
+FROM path
+RIGHT JOIN autorzy a
+ON a.id = path.autor
+GROUP BY a.id
+ORDER BY poziom
 ;
 
 DROP TABLE autorstwo;
